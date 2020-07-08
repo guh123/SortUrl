@@ -60,7 +60,7 @@ func deal_url() {
 			if math.Abs(float64(len(resp)-len(value))) > 50 {
 				continue
 			}
-			var percent float64 = smetrics.JaroWinkler(string(resp), value, 0.7, 4)
+			var percent float64 = smetrics.JaroWinkler(string(resp)[0:80], value, 0.7, 4)
 
 			fmt.Println(percent)
 			if percent > 0.95 {
@@ -72,7 +72,7 @@ func deal_url() {
 		if count != 1 {
 
 			fmt.Println(url)
-			urlcontent = append(urlcontent, string(resp))
+			urlcontent = append(urlcont, string(resp)[0:80])
 		}
 		res.Body.Close()
 
