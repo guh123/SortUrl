@@ -46,7 +46,7 @@ func deal_url() {
 	for url := range channel {
 
 		count := 0
-
+		percent := 0.1
 		res, err := http.Get(url)
 		if err != nil {
 			continue
@@ -60,7 +60,12 @@ func deal_url() {
 			if math.Abs(float64(len(resp)-len(value))) > 50 {
 				continue
 			}
-			var percent float64 = smetrics.JaroWinkler(string(resp)[0:80], value, 0.7, 4)
+
+			if len(resp) <= 150 {
+				percent = smetrics.JaroWinkler(string(resp), value, 0.7, 4)
+			} else {
+				percent = smetrics.JaroWinkler(string(resp)[100:150], value, 0.7, 4)
+			}
 
 			fmt.Println(percent)
 			if percent > 0.95 {
