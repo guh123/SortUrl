@@ -23,8 +23,9 @@ func main() {
 		go dealURL()
 	}
 	sc := bufio.NewScanner(os.Stdin)
-
+	println(2)
 	for sc.Scan() {
+		println(1)
 		url := sc.Text()
 		if strings.Index(url, "http") == -1 {
 			httpUrl := "http://" + url
@@ -32,10 +33,13 @@ func main() {
 
 			channel <- httpUrl
 			channel <- httpsUrl
+		} else {
+			channel <- url
 		}
-		channel <- url
 
 	}
+
+	close(channel)
 	wg.Wait()
 
 }
