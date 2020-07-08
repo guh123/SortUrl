@@ -56,7 +56,7 @@ func deal_url() {
 		}
 
 		for _, value := range urlcontent {
-			var percent float64 = smetrics.JaroWinkler(string(resp), value, 0.7, 4)
+			var percent float64 = smetrics.JaroWinkler(string(resp)[200:500], value, 0.7, 4)
 
 			fmt.Println(percent)
 			if percent > 0.95 {
