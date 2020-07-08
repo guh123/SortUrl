@@ -25,9 +25,7 @@ func main() {
 		go dealURL()
 	}
 	sc := bufio.NewScanner(os.Stdin)
-	println(2)
 	for sc.Scan() {
-		println(1)
 		url := sc.Text()
 		if strings.Index(url, "http") == -1 {
 			httpUrl := "http://" + url
@@ -84,7 +82,6 @@ func dealURL() {
 				text = string(response)[100:150]
 			}
 			percent = smetrics.JaroWinkler(text, value, 0.7, 4)
-			fmt.Println(percent)
 			if percent > 0.95 {
 
 				count = 1
