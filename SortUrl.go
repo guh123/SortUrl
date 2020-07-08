@@ -77,7 +77,7 @@ func deal_url() {
 		if count != 1 {
 
 			fmt.Println(url)
-			urlcontent = append(urlcontent, string(resp)[0:80])
+			urlcontent = append(urlcontent, text)
 		}
 		res.Body.Close()
 
