@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"os"
 	"strings"
@@ -56,7 +57,10 @@ func deal_url() {
 		}
 
 		for _, value := range urlcontent {
-			var percent float64 = smetrics.JaroWinkler(string(resp)[200:500], value, 0.7, 4)
+			if math.Abs(float64(len(resp)-len(value))) > 100 {
+				continue
+			}
+			var percent float64 = smetrics.JaroWinkler(string(resp)[20:200], value, 0.7, 4)
 
 			fmt.Println(percent)
 			if percent > 0.95 {
