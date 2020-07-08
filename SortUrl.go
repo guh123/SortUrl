@@ -7,11 +7,13 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/valyala/fasthttp"
 	"github.com/xrash/smetrics"
 )
 
+var duration_Seconds time.Duration = (500 * 10) * time.Millisecond
 var urlcontent []string = make([]string, 0)
 var channel = make(chan string)
 var wg sync.WaitGroup
@@ -51,6 +53,7 @@ func dealURL() {
 
 	resp := fasthttp.AcquireResponse()
 	client := &fasthttp.Client{}
+	client.ReadTimeout = duration_Seconds
 
 	defer func() {
 		// 用完需要释放资源
@@ -64,14 +67,12 @@ func dealURL() {
 		count := 0
 		percent := 0.1
 		req.SetRequestURI(url)
-		err := client.Do(req, resp)
-
+		err := client.DoTimeout(req, resp, duration_Seconds)
 		if err != nil {
 			continue
 		}
 
 		response := resp.Body()
-
 		for _, value := range urlcontent {
 			if math.Abs(float64(len(response)-len(value))) > 50 {
 				continue
