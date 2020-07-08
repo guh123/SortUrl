@@ -3,13 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"math"
-	"net/http"
 	"os"
 	"strings"
 	"sync"
 
+	"github.com/valyala/fasthttp"
 	"github.com/xrash/smetrics"
 )
 
@@ -21,18 +20,18 @@ func main() {
 
 	for i := 1; i <= 30; i++ {
 		wg.Add(1)
-		go deal_url()
+		go dealURL()
 	}
 	sc := bufio.NewScanner(os.Stdin)
 
 	for sc.Scan() {
 		url := sc.Text()
 		if strings.Index(url, "http") == -1 {
-			http_url := "http://" + url
-			https_url := "https://" + url
+			httpUrl := "http://" + url
+			httpsUrl := "https://" + url
 
-			channel <- http_url
-			channel <- https_url
+			channel <- httpUrl
+			channel <- httpsUrl
 		}
 		channel <- url
 
@@ -41,30 +40,43 @@ func main() {
 
 }
 
-func deal_url() {
-	defer wg.Done()
+func dealURL() {
+	req := fasthttp.AcquireRequest()
+
+	req.Header.SetMethod("GET")
+
+	resp := fasthttp.AcquireResponse()
+	client := &fasthttp.Client{}
+
+	defer func() {
+		// 用完需要释放资源
+		wg.Done()
+		fasthttp.ReleaseResponse(resp)
+		fasthttp.ReleaseRequest(req)
+	}()
+
 	for url := range channel {
 		var text string
 		count := 0
 		percent := 0.1
-		res, err := http.Get(url)
-		if err != nil {
-			continue
-		}
-		resp, err := ioutil.ReadAll(res.Body)
+		req.SetRequestURI(url)
+		err := client.Do(req, resp)
+
 		if err != nil {
 			continue
 		}
 
+		response := resp.Body()
+
 		for _, value := range urlcontent {
-			if math.Abs(float64(len(resp)-len(value))) > 50 {
+			if math.Abs(float64(len(response)-len(value))) > 50 {
 				continue
 			}
 
-			if len(resp) <= 150 {
-				text = string(resp)
+			if len(response) <= 150 {
+				text = string(response)
 			} else {
-				text = string(resp)[100:150]
+				text = string(response)[100:150]
 			}
 			percent = smetrics.JaroWinkler(text, value, 0.7, 4)
 			fmt.Println(percent)
@@ -79,7 +91,6 @@ func deal_url() {
 			fmt.Println(url)
 			urlcontent = append(urlcontent, text)
 		}
-		res.Body.Close()
 
 	}
 
